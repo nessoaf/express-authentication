@@ -25,12 +25,14 @@ router.post('/signup', (req, res) => {
     if (created) {
       console.log(`😎 ${user.name} was created!`);
 
-      // authenticat and redirect to homepage or profile
+      // authenticate and redirect to homepage or profile
       passport.authenticate('local', {
-        successRedirect: '/'
+        successRedirect: '/',
+        successFlash: `Successful account creation`
       })(req, res);
     } else { // else (there is a user at that email so they can't sign up)
       console.log(`⛔️ ${user.name} already exists!`);
+      req.flash(`error`, `Email already exists, please create a new user!`)
 
       // redirect to /auth/signup 
       res.redirect('/auth/signup');
@@ -38,6 +40,7 @@ router.post('/signup', (req, res) => {
   }).catch(err => {
     console.log(`🐻 Bad news bears, there's an error!`);
     console.log(err);
+    req.flash(`error`, err.message)
     // if there is an error, it's probably a validation error, so we'll return to /auth/signup
     res.redirect('/auth/signup');
   })
@@ -50,12 +53,15 @@ router.get('/login', (req, res) => {
 // make passport do the login stuff
 router.post('/login', passport.authenticate('local', {
   failureRedirect: '/auth/login',
-  successRedirect: '/'
+  successRedirect: '/',
+  failureFlash: `invalid login credentials`,
+  successFlash: `Successfully Logged In Welcome back!`
 }));
 
 // logout route
 router.get('/logout', (req, res) => {
   req.logout();
+  req.flash(`success`, `We are going to miss you! See you soon!`)
   res.redirect('/');
 });
 
